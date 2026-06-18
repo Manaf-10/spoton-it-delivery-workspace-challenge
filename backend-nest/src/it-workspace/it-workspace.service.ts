@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
-
+import { DatabaseService } from '../database/database.service';
 @Injectable()
 export class ItWorkspaceService {
+
+  constructor(private readonly db: DatabaseService) {}
+
   summary() {
     return {
       message: 'Starter workspace only. Implement IT Work Items, QA Checks, and Release Notes.',
