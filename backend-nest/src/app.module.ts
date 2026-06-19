@@ -11,6 +11,8 @@ import { JwtAuthGuard } from './common/jwt-auth.guard';
 import { DatabaseService } from './database/database.service';
 import { ReleasesController } from './releases/releases.controller';
 import { ReleasesService } from './releases/releases.service';
+import { QaChecksController } from './qa_checks/qa_checks.controller';
+import { QaChecksService } from './qa_checks/qa_checks.service';
 @Module({
   imports: [
     JwtModule.register({
@@ -19,7 +21,22 @@ import { ReleasesService } from './releases/releases.service';
       signOptions: { expiresIn: '8h' },
     }),
   ],
-  controllers: [HealthController, AuthController, ScoreController, ItWorkspaceController, ReleasesController],
-  providers: [AuthService, ScoreService, ItWorkspaceService, DatabaseService, ReleasesService, JwtAuthGuard],
+  controllers: [
+    HealthController,
+    AuthController,
+    ScoreController,
+    ItWorkspaceController,
+    ReleasesController,
+    QaChecksController,
+  ],
+  providers: [
+    AuthService,
+    ScoreService,
+    ItWorkspaceService,
+    DatabaseService,
+    ReleasesService,
+    QaChecksService,
+    JwtAuthGuard,
+  ],
 })
 export class AppModule {}
