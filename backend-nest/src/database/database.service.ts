@@ -1,4 +1,6 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { Pool, QueryResult, QueryResultRow } from 'pg';
 
 @Injectable()
@@ -14,6 +16,12 @@ export class DatabaseService implements OnModuleDestroy {
     params?: unknown[],
   ): Promise<QueryResult<T>> {
     return this.pool.query<T>(text, params);
+  }
+
+  async initSchema() {
+    const schemaPath = join(process.cwd(), 'src', 'database', 'schema.sql');
+    const schema = await readFile(schemaPath, 'utf8');
+    await this.query(schema);
   }
 
   async onModuleDestroy() {
