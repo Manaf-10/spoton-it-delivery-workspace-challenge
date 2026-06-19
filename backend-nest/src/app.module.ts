@@ -9,6 +9,8 @@ import { ItWorkspaceController } from './it-workspace/it-workspace.controller';
 import { ItWorkspaceService } from './it-workspace/it-workspace.service';
 import { JwtAuthGuard } from './common/jwt-auth.guard';
 import { DatabaseService } from './database/database.service';
+import { ReleasesController } from './releases/releases.controller';
+import { ReleasesService } from './releases/releases.service';
 @Module({
   imports: [
     JwtModule.register({
@@ -17,7 +19,7 @@ import { DatabaseService } from './database/database.service';
       signOptions: { expiresIn: '8h' },
     }),
   ],
-  controllers: [HealthController, AuthController, ScoreController, ItWorkspaceController],
-  providers: [AuthService, ScoreService, ItWorkspaceService, DatabaseService, JwtAuthGuard],
+  controllers: [HealthController, AuthController, ScoreController, ItWorkspaceController, ReleasesController],
+  providers: [AuthService, ScoreService, ItWorkspaceService, DatabaseService, ReleasesService, JwtAuthGuard],
 })
 export class AppModule {}
