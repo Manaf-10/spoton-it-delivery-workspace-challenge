@@ -29,22 +29,29 @@ commit-hash-if-available
 
 ## Entries
 
-## YYYY-MM-DD HH:mm - Example Tool
+## 2026-06-18 : 01:00- Codex
 
 ### Goal
-Example: design the first version of the work item database schema.
+
+design the first version of the database schema.
 
 ### Prompt
-Example prompt goes here.
+
+read the README and the project and generate an approprite sql schema
 
 ### Output Summary
-Example summary goes here.
+
+he gave me the schema script with the database service class.
 
 ### Files Changed
-- backend-nest/src/...
+
+- backend-nest/src/database/schema.sql
+- backend-nest/src/database/database.service.ts
 
 ### Manual Review
-Example manual review notes go here.
+
+Since the ERD was simple enough making the AI read the relitaly small project and generating the ERD and the database service class then reviewing  them were faster and more convenient, (i did review the script and everything they were simple enough and working as expected)
 
 ### Related Commit
+
 N/A
