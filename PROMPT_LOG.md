@@ -29,7 +29,9 @@ The ERD was simple enough that having AI inspect the small project and generate 
 
 ### Related Commit
 
-N/A
+- f91d139 - added empty database service to the backend
+- b75b408 - added the full schema script
+- 8543a36 - created the initialize schema function on startup and added it in the server
 
 ## 2026-06-20 - Codex
 
@@ -58,7 +60,7 @@ Reviewed the generated service/controller changes to confirm the API routes are 
 
 ### Related Commit
 
-N/A
+- f57d954 - created work items update method and response DTO
 
 ## 2026-06-20 - Codex
 
@@ -92,7 +94,7 @@ Codex decided to add the missing frontend APIs by itself, which was not the orig
 
 ### Related Commit
 
-N/A
+- d58d7c9 - replaced all old functions with arrow function and APIs are done
 
 ## 2026-06-20 - Codex
 
@@ -120,11 +122,7 @@ Reviewed the page in the browser, adjusted the desktop layout after it broke at 
 
 ### Related Commit
 
-N/A
-
-### Related Commit
-
-N/A
+- 11c95bd - work items form and listing implemented
 
 ## 2026-06-20 - Codex
 
@@ -152,7 +150,7 @@ Reviewed the UI after the QA checks were added and adjusted the layout because t
 
 ### Related Commit
 
-N/A
+- c68c095 - refactored the page.tsx into smaller parts
 
 ## 2026-06-20 - Codex
 
@@ -181,3 +179,39 @@ Codex split the large IT Workspace page into smaller route-level components. The
 ### Manual Review
 
 Reviewed the refactor to confirm the page became smaller and the behavior stayed the same.
+
+### Related Commit
+
+- c68c095 - refactored the page.tsx into smaller parts
+
+## 2026-06-20 - Codex
+
+### Goal
+
+Add the Releases view to the IT Workspace actions.
+
+### Prompt
+
+The releases view should be added with the actions in the IT workspace. Add the form with the listing of the releases.
+
+### Output Summary
+
+Codex added Releases as another workspace action beside Work Items and QA Checks. The new view includes a create release form, ready work item selection, release listing, and deploy action.
+
+### Files Changed
+
+- frontend-next/src/app/pm/it-workspace/page.tsx
+- frontend-next/src/app/pm/it-workspace/components/WorkspaceActions.tsx
+- frontend-next/src/app/pm/it-workspace/components/ReleasesView.tsx
+- frontend-next/src/app/pm/it-workspace/constants.ts
+- frontend-next/src/app/pm/it-workspace/types.ts
+- frontend-next/src/lib/api.ts
+- frontend-next/src/app/globals.css
+
+### Manual Review
+
+Reviewed the Releases view after it was added to the workspace actions and accepted the form/listing direction.
+
+### Related Commit
+
+- d9455c2 - created the releases view
