@@ -187,12 +187,6 @@ const ItWorkspacePage = () => {
       return;
     }
 
-    if (!nextForm.dueDate) {
-      setError('Work item due date is required.');
-      setSuccess('');
-      return;
-    }
-
     setSaving(true);
     setError('');
     setSuccess('');
@@ -200,6 +194,7 @@ const ItWorkspacePage = () => {
     try {
       await api.createWorkItem({
         ...nextForm,
+        dueDate: nextForm.dueDate || undefined,
       });
       setForm({ ...INITIAL_WORK_ITEM_FORM, assignee: currentUserName });
       setSuccess('Work item created.');

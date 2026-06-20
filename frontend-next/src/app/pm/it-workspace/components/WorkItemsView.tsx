@@ -117,7 +117,6 @@ export const WorkItemsView = ({
               min={today}
               value={form.dueDate ?? ''}
               onChange={(event) => onFormChange({ ...form, dueDate: event.target.value })}
-              required
             />
           </div>
         </div>
