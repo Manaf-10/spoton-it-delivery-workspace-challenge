@@ -8,12 +8,7 @@ export class ItWorkspaceController {
   constructor(private readonly workspace: ItWorkspaceService) {}
 
   @Get('summary')
-  summary() {
+  async summary() {
     return this.workspace.summary();
-  }
-
-  @Get('work-items')
-  listWorkItems() {
-    return this.workspace.listWorkItems();
   }
 }

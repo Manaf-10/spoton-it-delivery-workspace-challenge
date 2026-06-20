@@ -243,3 +243,34 @@ Ran the seed command and confirmed it seeded 4 work items, 3 QA checks, and 1 re
 ### Related Commit
 
 - 6e95864 - added data seeding
+
+## 2026-06-20 - Codex
+
+### Goal
+
+Add proper frontend validation for the user.
+
+### Prompt
+
+Enforce the DTO validation rules in the frontend. Use the input default rules, fastest way, so it shows the user.
+
+### Output Summary
+
+Codex added frontend validation for the workspace forms using native input/form validation where possible, plus submit-time checks for workflow rules that need application logic. The frontend now catches short titles, short descriptions, short QA fields, short release fields, empty linked release items, and invalid ready-for-release transitions before relying on backend errors.
+
+### Files Changed
+
+- frontend-next/src/app/pm/it-workspace/components/WorkItemsView.tsx
+- frontend-next/src/app/pm/it-workspace/components/QaChecksView.tsx
+- frontend-next/src/app/pm/it-workspace/components/ReleasesView.tsx
+- frontend-next/src/app/pm/it-workspace/page.tsx
+- frontend-next/src/lib/api.ts
+
+### Manual Review
+
+After testing the application, the frontend validation was not intuitive to the user, so I needed to do something fast and usable by using default input and form validation.
+
+### Related Commit
+
+- 7945eb2 - added proper front end validation instead of the backend message
+- b290970 - fixed due date picker

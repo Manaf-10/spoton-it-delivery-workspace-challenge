@@ -12,7 +12,14 @@ export type ScoreSummary = {
 
 export type WorkspaceSummary = {
   message: string;
-  counts: Record<string, number>;
+  counts: {
+    activeWorkItems: number;
+    qaChecks: number;
+    readyWorkItems: number;
+    releasedWorkItems: number;
+    releases: number;
+    totalWorkItems: number;
+  };
 };
 
 export type WorkItemType = 'feature' | 'bug' | 'improvement' | 'maintenance';

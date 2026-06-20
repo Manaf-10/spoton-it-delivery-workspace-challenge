@@ -9,6 +9,7 @@ import {
   QaCheck,
   QaCheckStatus,
   Release,
+  WorkspaceSummary as WorkspaceSummaryData,
   WorkItem,
   WorkItemStatus,
 } from '@/lib/api';
@@ -30,6 +31,7 @@ const ItWorkspacePage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [currentUserName, setCurrentUserName] = useState('');
+  const [workspaceSummary, setWorkspaceSummary] = useState<WorkspaceSummaryData | null>(null);
   const [form, setForm] = useState<CreateWorkItemInput>(INITIAL_WORK_ITEM_FORM);
   const [selectedWorkItemId, setSelectedWorkItemId] = useState('');
   const [qaChecks, setQaChecks] = useState<QaCheck[]>([]);
@@ -53,13 +55,22 @@ const ItWorkspacePage = () => {
   }, [workItems]);
 
   const summary = useMemo(() => {
+    if (workspaceSummary) {
+      return {
+        total: workspaceSummary.counts.totalWorkItems,
+        active: workspaceSummary.counts.activeWorkItems,
+        ready: workspaceSummary.counts.readyWorkItems,
+        released: workspaceSummary.counts.releasedWorkItems,
+      };
+    }
+
     return {
       total: workItems.length,
       active: workItems.filter((item) => !['ready_for_release', 'released'].includes(item.status)).length,
       ready: workItems.filter((item) => item.status === 'ready_for_release').length,
       released: workItems.filter((item) => item.status === 'released').length,
     };
-  }, [workItems]);
+  }, [workItems, workspaceSummary]);
 
   const selectedWorkItem = useMemo(() => {
     return workItems.find((item) => item.id === selectedWorkItemId) ?? null;
@@ -133,12 +144,25 @@ const ItWorkspacePage = () => {
     }
   };
 
+  const loadWorkspaceSummary = async () => {
+    try {
+      const loadedSummary = await api.workspaceSummary();
+      setWorkspaceSummary(loadedSummary);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load workspace summary');
+    }
+  };
+
   useEffect(() => {
     void loadWorkItems();
   }, [filters.status, filters.priority, filters.assignee]);
 
   useEffect(() => {
     void loadReleases();
+  }, []);
+
+  useEffect(() => {
+    void loadWorkspaceSummary();
   }, []);
 
   useEffect(() => {
@@ -198,7 +222,7 @@ const ItWorkspacePage = () => {
       });
       setForm({ ...INITIAL_WORK_ITEM_FORM, assignee: currentUserName });
       setSuccess('Work item created.');
-      await loadWorkItems();
+      await Promise.all([loadWorkItems(), loadWorkspaceSummary()]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create work item');
     } finally {
@@ -274,7 +298,7 @@ const ItWorkspacePage = () => {
         tester: currentUserName,
       });
       setSuccess(`QA check added for "${selectedWorkItem.title}".`);
-      await loadQaChecks(selectedWorkItem.id);
+      await Promise.all([loadQaChecks(selectedWorkItem.id), loadWorkspaceSummary()]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create QA check');
     } finally {
@@ -333,7 +357,7 @@ const ItWorkspacePage = () => {
       });
       setReleaseForm(INITIAL_RELEASE_FORM);
       setSuccess('Release created.');
-      await loadReleases();
+      await Promise.all([loadReleases(), loadWorkspaceSummary()]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create release');
     } finally {
@@ -348,7 +372,7 @@ const ItWorkspacePage = () => {
     try {
       await api.deployRelease(release.id);
       setSuccess(`Deployed ${release.version}.`);
-      await Promise.all([loadReleases(), loadWorkItems()]);
+      await Promise.all([loadReleases(), loadWorkItems(), loadWorkspaceSummary()]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to deploy release');
     }
@@ -375,7 +399,7 @@ const ItWorkspacePage = () => {
 
       await api.updateWorkItem(workItem.id, { status });
       setSuccess(`Moved "${workItem.title}" to ${formatLabel(status)}.`);
-      await loadWorkItems();
+      await Promise.all([loadWorkItems(), loadWorkspaceSummary()]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update work item status');
     }
@@ -388,7 +412,7 @@ const ItWorkspacePage = () => {
     try {
       await api.deleteWorkItem(workItem.id);
       setSuccess(`Deleted "${workItem.title}".`);
-      await loadWorkItems();
+      await Promise.all([loadWorkItems(), loadWorkspaceSummary()]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete work item');
     }
