@@ -61,7 +61,7 @@ export type CreateWorkItemInput = {
   type: WorkItemType;
   priority: WorkItemPriority;
   assignee: string;
-  dueDate?: string;
+  dueDate: string;
 };
 
 export type UpdateWorkItemInput = Partial<CreateWorkItemInput> & {

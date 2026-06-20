@@ -52,6 +52,7 @@ export const WorkItemsView = ({
             value={form.title}
             onChange={(event) => onFormChange({ ...form, title: event.target.value })}
             placeholder="Add release readiness checks"
+            minLength={3}
             required
           />
         </div>
@@ -62,6 +63,7 @@ export const WorkItemsView = ({
             value={form.description}
             onChange={(event) => onFormChange({ ...form, description: event.target.value })}
             placeholder="What needs to be built, fixed, or verified?"
+            minLength={5}
             required
           />
         </div>
@@ -103,6 +105,7 @@ export const WorkItemsView = ({
               value={form.assignee}
               onChange={(event) => onFormChange({ ...form, assignee: event.target.value })}
               placeholder="Owner name"
+              minLength={1}
               required
             />
           </div>
@@ -114,6 +117,7 @@ export const WorkItemsView = ({
               min={today}
               value={form.dueDate ?? ''}
               onChange={(event) => onFormChange({ ...form, dueDate: event.target.value })}
+              required
             />
           </div>
         </div>

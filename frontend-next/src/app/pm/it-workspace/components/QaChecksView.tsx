@@ -116,6 +116,7 @@ export const QaChecksView = ({
                   value={qaForm.testTitle}
                   onChange={(event) => onQaFormChange({ ...qaForm, testTitle: event.target.value })}
                   placeholder="Verify happy path"
+                  minLength={3}
                   required
                 />
               </div>
@@ -126,6 +127,7 @@ export const QaChecksView = ({
                   value={qaForm.expectedResult}
                   onChange={(event) => onQaFormChange({ ...qaForm, expectedResult: event.target.value })}
                   placeholder="What should happen?"
+                  minLength={3}
                   required
                 />
               </div>
@@ -160,6 +162,7 @@ export const QaChecksView = ({
                     value={qaForm.tester}
                     onChange={(event) => onQaFormChange({ ...qaForm, tester: event.target.value })}
                     placeholder="Tester name"
+                    minLength={1}
                     required
                   />
                 </div>

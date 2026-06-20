@@ -1,7 +1,8 @@
 import type { FormEvent } from 'react';
 import type { CreateReleaseInput, DeploymentStatus, Release, WorkItem } from '@/lib/api';
-import { DEPLOYMENT_STATUSES } from '@/lib/api';
 import { formatLabel, today } from '../constants';
+
+const CREATE_RELEASE_STATUSES: DeploymentStatus[] = ['draft', 'scheduled'];
 
 type ReleasesViewProps = {
   form: CreateReleaseInput;
@@ -48,6 +49,7 @@ export const ReleasesView = ({
                 value={form.version}
                 onChange={(event) => onFormChange({ ...form, version: event.target.value })}
                 placeholder="v1.0.0"
+                minLength={2}
                 required
               />
             </div>
@@ -70,6 +72,7 @@ export const ReleasesView = ({
               value={form.summary}
               onChange={(event) => onFormChange({ ...form, summary: event.target.value })}
               placeholder="What is included in this release?"
+              minLength={5}
               required
             />
           </div>
@@ -80,7 +83,7 @@ export const ReleasesView = ({
               value={form.deploymentStatus}
               onChange={(event) => onFormChange({ ...form, deploymentStatus: event.target.value as DeploymentStatus })}
             >
-              {DEPLOYMENT_STATUSES.map((status) => (
+              {CREATE_RELEASE_STATUSES.map((status) => (
                 <option key={status} value={status}>
                   {formatLabel(status)}
                 </option>

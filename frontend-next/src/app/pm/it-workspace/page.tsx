@@ -21,6 +21,8 @@ import { WorkspaceSummary } from './components/WorkspaceSummary';
 import { formatLabel, INITIAL_QA_FORM, INITIAL_RELEASE_FORM, INITIAL_WORK_ITEM_FORM } from './constants';
 import type { WorkItemFiltersState, WorkspaceView } from './types';
 
+const trimmedLength = (value = '') => value.trim().length;
+
 const ItWorkspacePage = () => {
   const [workItems, setWorkItems] = useState<WorkItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -159,14 +161,45 @@ const ItWorkspacePage = () => {
 
   const submitWorkItem = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    const nextForm = {
+      ...form,
+      assignee: form.assignee.trim(),
+      description: form.description.trim(),
+      title: form.title.trim(),
+    };
+
+    if (trimmedLength(nextForm.title) < 3) {
+      setError('Work item title must be at least 3 characters.');
+      setSuccess('');
+      return;
+    }
+
+    if (trimmedLength(nextForm.description) < 5) {
+      setError('Work item description must be at least 5 characters.');
+      setSuccess('');
+      return;
+    }
+
+    if (!nextForm.assignee) {
+      setError('Work item assignee is required.');
+      setSuccess('');
+      return;
+    }
+
+    if (!nextForm.dueDate) {
+      setError('Work item due date is required.');
+      setSuccess('');
+      return;
+    }
+
     setSaving(true);
     setError('');
     setSuccess('');
 
     try {
       await api.createWorkItem({
-        ...form,
-        dueDate: form.dueDate || undefined,
+        ...nextForm,
       });
       setForm({ ...INITIAL_WORK_ITEM_FORM, assignee: currentUserName });
       setSuccess('Work item created.');
@@ -202,16 +235,43 @@ const ItWorkspacePage = () => {
       return;
     }
 
+    const nextQaForm = {
+      ...qaForm,
+      actualResult: qaForm.actualResult?.trim(),
+      expectedResult: qaForm.expectedResult.trim(),
+      notes: qaForm.notes?.trim(),
+      testTitle: qaForm.testTitle.trim(),
+      tester: qaForm.tester.trim(),
+    };
+
+    if (trimmedLength(nextQaForm.testTitle) < 3) {
+      setError('QA test title must be at least 3 characters.');
+      setSuccess('');
+      return;
+    }
+
+    if (trimmedLength(nextQaForm.expectedResult) < 3) {
+      setError('QA expected result must be at least 3 characters.');
+      setSuccess('');
+      return;
+    }
+
+    if (!nextQaForm.tester) {
+      setError('QA tester is required.');
+      setSuccess('');
+      return;
+    }
+
     setQaSaving(true);
     setError('');
     setSuccess('');
 
     try {
       await api.createQaCheck({
-        ...qaForm,
+        ...nextQaForm,
         workItemId: selectedWorkItem.id,
-        actualResult: qaForm.actualResult || undefined,
-        notes: qaForm.notes || undefined,
+        actualResult: nextQaForm.actualResult || undefined,
+        notes: nextQaForm.notes || undefined,
       });
       setQaForm({
         ...INITIAL_QA_FORM,
@@ -242,14 +302,39 @@ const ItWorkspacePage = () => {
 
   const submitRelease = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    const nextReleaseForm = {
+      ...releaseForm,
+      summary: releaseForm.summary.trim(),
+      version: releaseForm.version.trim(),
+    };
+
+    if (trimmedLength(nextReleaseForm.version) < 2) {
+      setError('Release version must be at least 2 characters.');
+      setSuccess('');
+      return;
+    }
+
+    if (trimmedLength(nextReleaseForm.summary) < 5) {
+      setError('Release summary must be at least 5 characters.');
+      setSuccess('');
+      return;
+    }
+
+    if (!nextReleaseForm.linkedWorkItemIds?.length) {
+      setError('Select at least one ready work item before creating a release.');
+      setSuccess('');
+      return;
+    }
+
     setReleaseSaving(true);
     setError('');
     setSuccess('');
 
     try {
       await api.createRelease({
-        ...releaseForm,
-        linkedWorkItemIds: releaseForm.linkedWorkItemIds?.length ? releaseForm.linkedWorkItemIds : undefined,
+        ...nextReleaseForm,
+        linkedWorkItemIds: nextReleaseForm.linkedWorkItemIds,
       });
       setReleaseForm(INITIAL_RELEASE_FORM);
       setSuccess('Release created.');
@@ -279,6 +364,20 @@ const ItWorkspacePage = () => {
     setSuccess('');
 
     try {
+      if (status === 'ready_for_release') {
+        const checks = await api.listQaChecks({ workItemId: workItem.id });
+
+        if (!checks.length) {
+          setError('Add at least one QA check before moving this work item to ready for release.');
+          return;
+        }
+
+        if (checks.some((check) => check.status !== 'passed')) {
+          setError('All QA checks must be passed before moving this work item to ready for release.');
+          return;
+        }
+      }
+
       await api.updateWorkItem(workItem.id, { status });
       setSuccess(`Moved "${workItem.title}" to ${formatLabel(status)}.`);
       await loadWorkItems();
