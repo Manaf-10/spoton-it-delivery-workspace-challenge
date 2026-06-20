@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { api, ScoreSummary } from '@/lib/api';
 
-export default function ScorePage() {
+const ScorePage = () => {
   const [score, setScore] = useState<ScoreSummary | null>(null);
   const [error, setError] = useState('');
 
@@ -33,4 +33,6 @@ export default function ScorePage() {
       </div>
     </section>
   );
-}
+};
+
+export default ScorePage;

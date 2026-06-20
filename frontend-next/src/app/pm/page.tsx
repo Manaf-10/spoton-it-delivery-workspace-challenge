@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation';
 
-export default function PmPage() {
+const PmPage = () => {
   redirect('/pm/it-workspace');
-}
+};
+
+export default PmPage;

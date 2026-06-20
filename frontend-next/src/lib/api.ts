@@ -15,27 +15,122 @@ export type WorkspaceSummary = {
   counts: Record<string, number>;
 };
 
+export type WorkItemType = 'feature' | 'bug' | 'improvement' | 'maintenance';
+export type WorkItemStatus = 'backlog' | 'planned' | 'in_progress' | 'qa' | 'ready_for_release' | 'released';
+export type WorkItemPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type QaCheckStatus = 'pending' | 'passed' | 'failed';
+export type DeploymentStatus = 'draft' | 'scheduled' | 'deployed' | 'rolled_back';
+
 export type WorkItem = {
   id: string;
   title: string;
-  status: string;
-  priority: string;
+  description: string;
+  type: WorkItemType;
+  status: WorkItemStatus;
+  priority: WorkItemPriority;
+  assignee: string;
+  dueDate: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
-export function getToken() {
+export type WorkItemFilters = {
+  status?: WorkItemStatus;
+  priority?: WorkItemPriority;
+  assignee?: string;
+  search?: string;
+};
+
+export type CreateWorkItemInput = {
+  title: string;
+  description: string;
+  type: WorkItemType;
+  priority: WorkItemPriority;
+  assignee: string;
+  dueDate?: string;
+};
+
+export type UpdateWorkItemInput = Partial<CreateWorkItemInput> & {
+  status?: WorkItemStatus;
+};
+
+export type QaCheck = {
+  id: string;
+  workItemId: string;
+  testTitle: string;
+  expectedResult: string;
+  actualResult: string | null;
+  status: QaCheckStatus;
+  tester: string;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type QaCheckFilters = {
+  workItemId?: string;
+  status?: QaCheckStatus;
+};
+
+export type CreateQaCheckInput = {
+  workItemId: string;
+  testTitle: string;
+  expectedResult: string;
+  actualResult?: string;
+  status: QaCheckStatus;
+  tester: string;
+  notes?: string;
+};
+
+export type UpdateQaCheckInput = Partial<CreateQaCheckInput>;
+
+export type Release = {
+  id: string;
+  version: string;
+  releaseDate: string;
+  summary: string;
+  deploymentStatus: DeploymentStatus;
+  linkedWorkItemIds: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateReleaseInput = {
+  version: string;
+  releaseDate: string;
+  summary: string;
+  deploymentStatus: DeploymentStatus;
+  linkedWorkItemIds?: string[];
+};
+
+export type UpdateReleaseInput = Partial<CreateReleaseInput>;
+
+const withQuery = (path: string, query: object) => {
+  const params = new URLSearchParams();
+
+  Object.entries(query).forEach(([key, value]) => {
+    if (typeof value === 'string' && value) params.set(key, value);
+  });
+
+  const queryString = params.toString();
+  return queryString ? `${path}?${queryString}` : path;
+};
+
+export const getToken = () => {
   if (typeof window === 'undefined') return null;
   return window.localStorage.getItem('spoton_challenge_token');
-}
+};
 
-export function saveToken(token: string) {
+export const saveToken = (token: string) => {
   window.localStorage.setItem('spoton_challenge_token', token);
-}
+};
 
-export function clearToken() {
+export const clearToken = () => {
   window.localStorage.removeItem('spoton_challenge_token');
-}
+};
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+const request = async <T>(path: string, init: RequestInit = {}): Promise<T> => {
   const token = getToken();
   const headers = new Headers(init.headers);
   headers.set('Content-Type', 'application/json');
@@ -49,7 +144,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
 
   return data as T;
-}
+};
 
 export const api = {
   login: (email: string, password: string) =>
@@ -60,5 +155,56 @@ export const api = {
   me: () => request<LoginResponse['user']>('/auth/me'),
   score: () => request<ScoreSummary>('/score/me'),
   workspaceSummary: () => request<WorkspaceSummary>('/it-workspace/summary'),
-  workItems: () => request<WorkItem[]>('/it-workspace/work-items'),
+  listWorkItems: (filters: WorkItemFilters = {}) => request<WorkItem[]>(withQuery('/work-items', filters)),
+  getWorkItem: (id: string) => request<WorkItem>(`/work-items/${id}`),
+  createWorkItem: (body: CreateWorkItemInput) =>
+    request<WorkItem>('/work-items', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  updateWorkItem: (id: string, body: UpdateWorkItemInput) =>
+    request<WorkItem>(`/work-items/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+  deleteWorkItem: (id: string) =>
+    request<{ ok: true }>(`/work-items/${id}`, {
+      method: 'DELETE',
+    }),
+  listQaChecks: (filters: QaCheckFilters = {}) => request<QaCheck[]>(withQuery('/qa-checks', filters)),
+  getQaCheck: (id: string) => request<QaCheck>(`/qa-checks/${id}`),
+  createQaCheck: (body: CreateQaCheckInput) =>
+    request<QaCheck>('/qa-checks', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  updateQaCheck: (id: string, body: UpdateQaCheckInput) =>
+    request<QaCheck>(`/qa-checks/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+  deleteQaCheck: (id: string) =>
+    request<{ ok: true }>(`/qa-checks/${id}`, {
+      method: 'DELETE',
+    }),
+  listReleases: () => request<Release[]>('/releases'),
+  getRelease: (id: string) => request<Release>(`/releases/${id}`),
+  createRelease: (body: CreateReleaseInput) =>
+    request<Release>('/releases', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  updateRelease: (id: string, body: UpdateReleaseInput) =>
+    request<Release>(`/releases/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+  deployRelease: (id: string) =>
+    request<Release>(`/releases/${id}/deploy`, {
+      method: 'POST',
+    }),
+  deleteRelease: (id: string) =>
+    request<{ ok: true }>(`/releases/${id}`, {
+      method: 'DELETE',
+    }),
 };

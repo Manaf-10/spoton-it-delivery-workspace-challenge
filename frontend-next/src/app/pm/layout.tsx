@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { clearToken } from '@/lib/api';
 
-export default function PmLayout({ children }: { children: React.ReactNode }) {
+const PmLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 
   return (
@@ -27,4 +27,6 @@ export default function PmLayout({ children }: { children: React.ReactNode }) {
       <main className="main">{children}</main>
     </div>
   );
-}
+};
+
+export default PmLayout;

@@ -4,14 +4,14 @@ import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, saveToken } from '@/lib/api';
 
-export default function LoginPage() {
+const LoginPage = () => {
   const router = useRouter();
   const [email, setEmail] = useState('intern@spoton.test');
   const [password, setPassword] = useState('intern123');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
     setError('');
@@ -24,7 +24,7 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <main className="form">
@@ -47,4 +47,6 @@ export default function LoginPage() {
       </form>
     </main>
   );
-}
+};
+
+export default LoginPage;
