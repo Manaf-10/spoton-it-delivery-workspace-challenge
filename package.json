@@ -6,6 +6,7 @@
     "install:all": "npm --prefix backend-nest install && npm --prefix frontend-next install",
     "dev:api": "npm --prefix backend-nest run start:dev",
     "dev:web": "npm --prefix frontend-next run dev -- -p 3000",
+    "dev:seed": "npm --prefix backend-nest run dev:seed",
     "build:api": "npm --prefix backend-nest run build",
     "build:web": "npm --prefix frontend-next run build",
     "test:api": "npm --prefix backend-nest run test",
