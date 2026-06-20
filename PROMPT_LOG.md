@@ -59,3 +59,37 @@ Reviewed the generated service/controller changes to confirm the API routes are 
 ### Related Commit
 
 N/A
+
+## 2026-06-20 - Codex
+
+### Goal
+
+Change old function declarations to the new arrow function style, then start putting the APIs in the frontend.
+
+### Prompt
+
+Replace the old function declarations with arrow functions for consistency, then start adding the frontend API helpers needed to call the backend endpoints.
+
+### Output Summary
+
+Codex changed the normal function declarations to arrow functions where it was safe. It also added the frontend API helpers for Work Items, QA Checks, and Releases so the frontend can call the new backend routes.
+
+### Files Changed
+
+- frontend-next/src/lib/api.ts
+- frontend-next/src/app/layout.tsx
+- frontend-next/src/app/page.tsx
+- frontend-next/src/app/login/page.tsx
+- frontend-next/src/app/pm/layout.tsx
+- frontend-next/src/app/pm/page.tsx
+- frontend-next/src/app/pm/score/page.tsx
+- frontend-next/src/app/pm/it-workspace/page.tsx
+- backend-nest/src/main.ts
+
+### Manual Review
+
+Codex decided to add the missing frontend APIs by itself, which was not the original plan because I wanted to do that part myself. After reviewing the generated API helpers and validating that they matched the backend routes and DTO shapes, I decided to accept the work.
+
+### Related Commit
+
+N/A

@@ -21,6 +21,17 @@ export type WorkItemPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type QaCheckStatus = 'pending' | 'passed' | 'failed';
 export type DeploymentStatus = 'draft' | 'scheduled' | 'deployed' | 'rolled_back';
 
+export const WORK_ITEM_TYPES: WorkItemType[] = ['feature', 'bug', 'improvement', 'maintenance'];
+export const WORK_ITEM_PRIORITIES: WorkItemPriority[] = ['low', 'medium', 'high', 'urgent'];
+export const WORK_ITEM_STATUSES: WorkItemStatus[] = [
+  'backlog',
+  'planned',
+  'in_progress',
+  'qa',
+  'ready_for_release',
+  'released',
+];
+
 export type WorkItem = {
   id: string;
   title: string;
