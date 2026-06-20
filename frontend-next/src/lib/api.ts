@@ -153,10 +153,29 @@ const request = async <T>(path: string, init: RequestInit = {}): Promise<T> => {
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    throw new Error(data?.message ?? 'Request failed');
+    throw new Error(getErrorMessage(data));
   }
 
   return data as T;
+};
+
+const getErrorMessage = (data: unknown) => {
+  if (typeof data === 'string') return data;
+
+  if (data && typeof data === 'object' && 'message' in data) {
+    const message = (data as { message?: unknown }).message;
+
+    if (Array.isArray(message)) return message.join('. ');
+    if (typeof message === 'string') return message;
+  }
+
+  if (data && typeof data === 'object' && 'error' in data) {
+    const error = (data as { error?: unknown }).error;
+
+    if (typeof error === 'string') return error;
+  }
+
+  return 'Request failed';
 };
 
 export const api = {

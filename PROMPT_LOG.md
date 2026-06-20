@@ -215,3 +215,31 @@ Reviewed the Releases view after it was added to the workspace actions and accep
 ### Related Commit
 
 - d9455c2 - created the releases view
+
+## 2026-06-20 - Codex
+
+### Goal
+
+Add data seeding for local development.
+
+### Prompt
+
+Add data seeding with the function and the command, with the command being npm run dev:seed.
+
+### Output Summary
+
+Codex added a reusable seed function for PostgreSQL data and wired a root-level `npm run dev:seed` command. The seed creates sample work items, QA checks, and a release using upserts so it can be run more than once.
+
+### Files Changed
+
+- backend-nest/src/database/seed.ts
+- backend-nest/package.json
+- package.json
+
+### Manual Review
+
+Ran the seed command and confirmed it seeded 4 work items, 3 QA checks, and 1 release.
+
+### Related Commit
+
+- 6e95864 - added data seeding

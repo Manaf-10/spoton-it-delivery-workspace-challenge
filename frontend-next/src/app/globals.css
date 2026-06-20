@@ -131,6 +131,30 @@ p { color: var(--muted); line-height: 1.6; }
 .table { width: 100%; border-collapse: collapse; }
 .table th, .table td { border-bottom: 1px solid var(--line); padding: 12px; text-align: left; }
 .workspace-alert { margin-bottom: 16px; }
+.workspace-feedback {
+  border: 1px solid;
+  border-radius: 8px;
+  margin-bottom: 18px;
+  padding: 14px 16px;
+}
+.workspace-feedback strong {
+  display: block;
+  margin-bottom: 4px;
+}
+.workspace-feedback p {
+  margin: 0;
+  color: inherit;
+}
+.workspace-feedback-error {
+  background: #fff4f2;
+  border-color: #fecdca;
+  color: #b42318;
+}
+.workspace-feedback-success {
+  background: #ecfdf3;
+  border-color: #abefc6;
+  color: #067647;
+}
 .workspace-summary {
   display: grid;
   grid-template-columns: 23.5% 23.5% 23.5% 23.5%;

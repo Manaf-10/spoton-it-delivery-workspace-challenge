@@ -16,6 +16,7 @@ import { QaChecksView } from './components/QaChecksView';
 import { ReleasesView } from './components/ReleasesView';
 import { WorkItemsView } from './components/WorkItemsView';
 import { WorkspaceActions } from './components/WorkspaceActions';
+import { WorkspaceFeedback } from './components/WorkspaceFeedback';
 import { WorkspaceSummary } from './components/WorkspaceSummary';
 import { formatLabel, INITIAL_QA_FORM, INITIAL_RELEASE_FORM, INITIAL_WORK_ITEM_FORM } from './constants';
 import type { WorkItemFiltersState, WorkspaceView } from './types';
@@ -309,9 +310,6 @@ const ItWorkspacePage = () => {
         </div>
       </div>
 
-      {error ? <div className="card error workspace-alert">{error}</div> : null}
-      {success ? <div className="card success workspace-alert">{success}</div> : null}
-
       <WorkspaceSummary {...summary} />
 
       <WorkspaceActions
@@ -320,6 +318,8 @@ const ItWorkspacePage = () => {
         onRefresh={loadWorkItems}
         onViewChange={setActiveView}
       />
+
+      <WorkspaceFeedback error={error} success={success} />
 
       {activeView === 'work-items' ? (
         <WorkItemsView
