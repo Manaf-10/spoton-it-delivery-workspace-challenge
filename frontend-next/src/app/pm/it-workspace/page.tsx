@@ -6,48 +6,16 @@ import {
   CreateQaCheckInput,
   CreateWorkItemInput,
   QaCheck,
-  QA_CHECK_STATUSES,
   QaCheckStatus,
   WorkItem,
-  WORK_ITEM_PRIORITIES,
-  WORK_ITEM_STATUSES,
-  WORK_ITEM_TYPES,
-  WorkItemPriority,
   WorkItemStatus,
-  WorkItemType,
 } from '@/lib/api';
-
-const NEXT_STATUSES: Record<WorkItemStatus, WorkItemStatus[]> = {
-  backlog: ['planned'],
-  planned: ['in_progress'],
-  in_progress: ['qa'],
-  qa: ['in_progress', 'ready_for_release'],
-  ready_for_release: ['qa', 'released'],
-  released: [],
-};
-
-const INITIAL_FORM: CreateWorkItemInput = {
-  title: '',
-  description: '',
-  type: 'feature',
-  priority: 'medium',
-  assignee: '',
-  dueDate: '',
-};
-
-const INITIAL_QA_FORM: CreateQaCheckInput = {
-  workItemId: '',
-  testTitle: '',
-  expectedResult: '',
-  actualResult: '',
-  status: 'pending',
-  tester: '',
-  notes: '',
-};
-
-const today = new Date().toISOString().slice(0, 10);
-
-const formatLabel = (value: string) => value.replaceAll('_', ' ');
+import { QaChecksView } from './components/QaChecksView';
+import { WorkItemsView } from './components/WorkItemsView';
+import { WorkspaceActions } from './components/WorkspaceActions';
+import { WorkspaceSummary } from './components/WorkspaceSummary';
+import { formatLabel, INITIAL_QA_FORM, INITIAL_WORK_ITEM_FORM } from './constants';
+import type { WorkItemFiltersState, WorkspaceView } from './types';
 
 const ItWorkspacePage = () => {
   const [workItems, setWorkItems] = useState<WorkItem[]>([]);
@@ -56,18 +24,14 @@ const ItWorkspacePage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [currentUserName, setCurrentUserName] = useState('');
-  const [form, setForm] = useState<CreateWorkItemInput>(INITIAL_FORM);
+  const [form, setForm] = useState<CreateWorkItemInput>(INITIAL_WORK_ITEM_FORM);
   const [selectedWorkItemId, setSelectedWorkItemId] = useState('');
   const [qaChecks, setQaChecks] = useState<QaCheck[]>([]);
   const [qaLoading, setQaLoading] = useState(false);
   const [qaSaving, setQaSaving] = useState(false);
   const [qaForm, setQaForm] = useState<CreateQaCheckInput>(INITIAL_QA_FORM);
-  const [filters, setFilters] = useState<{
-    status: '' | WorkItemStatus;
-    priority: '' | WorkItemPriority;
-    assignee: string;
-    search: string;
-  }>({
+  const [activeView, setActiveView] = useState<WorkspaceView>('work-items');
+  const [filters, setFilters] = useState<WorkItemFiltersState>({
     status: '',
     priority: '',
     assignee: '',
@@ -163,7 +127,7 @@ const ItWorkspacePage = () => {
       });
   }, []);
 
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
+  const submitWorkItem = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSaving(true);
     setError('');
@@ -174,7 +138,7 @@ const ItWorkspacePage = () => {
         ...form,
         dueDate: form.dueDate || undefined,
       });
-      setForm({ ...INITIAL_FORM, assignee: currentUserName });
+      setForm({ ...INITIAL_WORK_ITEM_FORM, assignee: currentUserName });
       setSuccess('Work item created.');
       await loadWorkItems();
     } catch (err) {
@@ -185,6 +149,7 @@ const ItWorkspacePage = () => {
   };
 
   const selectWorkItemForQa = async (workItem: WorkItem) => {
+    setActiveView('qa-checks');
     setSelectedWorkItemId(workItem.id);
     setQaForm((currentForm) => ({
       ...currentForm,
@@ -192,6 +157,11 @@ const ItWorkspacePage = () => {
       tester: currentForm.tester || currentUserName,
     }));
     await loadQaChecks(workItem.id);
+  };
+
+  const clearQaSelection = () => {
+    setSelectedWorkItemId('');
+    setQaChecks([]);
   };
 
   const submitQaCheck = async (event: FormEvent<HTMLFormElement>) => {
@@ -279,402 +249,52 @@ const ItWorkspacePage = () => {
       {error ? <div className="card error workspace-alert">{error}</div> : null}
       {success ? <div className="card success workspace-alert">{success}</div> : null}
 
-      <div className="workspace-summary">
-        <div className="card summary-card">
-          <span>Total work</span>
-          <strong>{summary.total}</strong>
-        </div>
-        <div className="card summary-card">
-          <span>Active</span>
-          <strong>{summary.active}</strong>
-        </div>
-        <div className="card summary-card">
-          <span>Ready for release</span>
-          <strong>{summary.ready}</strong>
-        </div>
-        <div className="card summary-card">
-          <span>Released</span>
-          <strong>{summary.released}</strong>
-        </div>
-      </div>
+      <WorkspaceSummary {...summary} />
 
-      <div className="card workspace-actions">
-        <div>
-          <h2>Actions</h2>
-          <p>Create work, filter the list, move items through the workflow, or remove items that are no longer needed.</p>
-        </div>
-        <div className="actions-list">
-          <button className="button secondary" onClick={loadWorkItems} disabled={loading}>
-            {loading ? 'Refreshing...' : 'Refresh work'}
-          </button>
-          <a className="button" href="#create-work-item">
-            Create work item
-          </a>
-        </div>
-      </div>
+      <WorkspaceActions
+        activeView={activeView}
+        loading={loading}
+        onRefresh={loadWorkItems}
+        onViewChange={setActiveView}
+      />
 
-      <div className="workspace-layout">
-        <form id="create-work-item" className="card workspace-form" onSubmit={submit}>
-          <h2>Create work item</h2>
-          <div className="field">
-            <label htmlFor="title">Title</label>
-            <input
-              id="title"
-              value={form.title}
-              onChange={(event) => setForm({ ...form, title: event.target.value })}
-              placeholder="Add release readiness checks"
-              required
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="description">Description</label>
-            <textarea
-              id="description"
-              value={form.description}
-              onChange={(event) => setForm({ ...form, description: event.target.value })}
-              placeholder="What needs to be built, fixed, or verified?"
-              required
-            />
-          </div>
-          <div className="form-grid">
-            <div className="field">
-              <label htmlFor="type">Type</label>
-              <select
-                id="type"
-                value={form.type}
-                onChange={(event) => setForm({ ...form, type: event.target.value as WorkItemType })}
-              >
-                {WORK_ITEM_TYPES.map((type) => (
-                  <option key={type} value={type}>
-                    {formatLabel(type)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="priority">Priority</label>
-              <select
-                id="priority"
-                value={form.priority}
-                onChange={(event) => setForm({ ...form, priority: event.target.value as WorkItemPriority })}
-              >
-                {WORK_ITEM_PRIORITIES.map((priority) => (
-                  <option key={priority} value={priority}>
-                    {formatLabel(priority)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="form-grid">
-            <div className="field">
-              <label htmlFor="assignee">Assignee</label>
-              <input
-                id="assignee"
-                value={form.assignee}
-                onChange={(event) => setForm({ ...form, assignee: event.target.value })}
-                placeholder="Owner name"
-                required
-              />
-            </div>
-            <div className="field">
-              <label htmlFor="due-date">Due date</label>
-              <input
-                id="due-date"
-                type="date"
-                min={today}
-                value={form.dueDate ?? ''}
-                onChange={(event) => setForm({ ...form, dueDate: event.target.value })}
-              />
-            </div>
-          </div>
-          <button className="button" disabled={saving}>
-            {saving ? 'Creating...' : 'Create work item'}
-          </button>
-        </form>
+      {activeView === 'work-items' ? (
+        <WorkItemsView
+          filteredAssignees={filteredAssignees}
+          filters={filters}
+          form={form}
+          loading={loading}
+          saving={saving}
+          workItems={workItems}
+          onCreate={submitWorkItem}
+          onDelete={removeWorkItem}
+          onFilterChange={setFilters}
+          onFormChange={setForm}
+          onRefresh={loadWorkItems}
+          onSelectQa={selectWorkItemForQa}
+          onStatusChange={updateStatus}
+        />
+      ) : null}
 
-        <div className="workspace-main">
-          <div className="card filters-card">
-            <div className="field">
-              <label htmlFor="search">Search</label>
-              <input
-                id="search"
-                value={filters.search}
-                onChange={(event) => setFilters({ ...filters, search: event.target.value })}
-                placeholder="Title or description"
-              />
-            </div>
-            <div className="field">
-              <label htmlFor="status-filter">Status</label>
-              <select
-                id="status-filter"
-                value={filters.status}
-                onChange={(event) => setFilters({ ...filters, status: event.target.value as '' | WorkItemStatus })}
-              >
-                <option value="">All statuses</option>
-                {WORK_ITEM_STATUSES.map((status) => (
-                  <option key={status} value={status}>
-                    {formatLabel(status)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="priority-filter">Priority</label>
-              <select
-                id="priority-filter"
-                value={filters.priority}
-                onChange={(event) => setFilters({ ...filters, priority: event.target.value as '' | WorkItemPriority })}
-              >
-                <option value="">All priorities</option>
-                {WORK_ITEM_PRIORITIES.map((priority) => (
-                  <option key={priority} value={priority}>
-                    {formatLabel(priority)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="assignee-filter">Assignee</label>
-              <input
-                id="assignee-filter"
-                list="assignees"
-                value={filters.assignee}
-                onChange={(event) => setFilters({ ...filters, assignee: event.target.value })}
-                placeholder="Anyone"
-              />
-              <datalist id="assignees">
-                {filteredAssignees.map((assignee) => (
-                  <option key={assignee} value={assignee} />
-                ))}
-              </datalist>
-            </div>
-            <button className="button secondary" onClick={loadWorkItems} disabled={loading}>
-              Apply search
-            </button>
-          </div>
-
-          <div className="card">
-            <div className="section-heading">
-              <div>
-                <h2>Current work</h2>
-                <p>{workItems.length} item{workItems.length === 1 ? '' : 's'} loaded</p>
-              </div>
-            </div>
-
-            {loading ? <div className="empty table-state">Loading work items...</div> : null}
-
-            {!loading && !workItems.length ? (
-              <div className="empty table-state">No work items match the current filters.</div>
-            ) : null}
-
-            {!loading && workItems.length ? (
-              <div className="work-items-grid" role="table" aria-label="Work items">
-                <div className="work-item-row work-item-header" role="row">
-                  <div role="columnheader">Item</div>
-                  <div role="columnheader">Status</div>
-                  <div role="columnheader">Priority</div>
-                  <div role="columnheader">Assignee</div>
-                  <div role="columnheader">Due</div>
-                  <div role="columnheader">Move</div>
-                  <div role="columnheader">Actions</div>
-                </div>
-
-                {workItems.map((item) => (
-                  <div className="work-item-row" role="row" key={item.id}>
-                    <div className="work-item-summary" role="cell">
-                      <strong>{item.title}</strong>
-                      <span>{item.description}</span>
-                      <small>{formatLabel(item.type)}</small>
-                    </div>
-                    <div role="cell">
-                      <span className={`badge status-${item.status}`}>{formatLabel(item.status)}</span>
-                    </div>
-                    <div role="cell">{formatLabel(item.priority)}</div>
-                    <div role="cell">{item.assignee}</div>
-                    <div role="cell">{item.dueDate ? new Date(item.dueDate).toLocaleDateString() : 'No date'}</div>
-                    <div role="cell">
-                      <select
-                        value=""
-                        disabled={!NEXT_STATUSES[item.status].length}
-                        onChange={(event) => {
-                          if (event.target.value) {
-                            void updateStatus(item, event.target.value as WorkItemStatus);
-                          }
-                        }}
-                      >
-                        <option value="">Next step</option>
-                        {NEXT_STATUSES[item.status].map((status) => (
-                          <option key={status} value={status}>
-                            {formatLabel(status)}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="row-actions" role="cell">
-                      <button className="text-button" onClick={() => void selectWorkItemForQa(item)}>
-                        QA
-                      </button>
-                      <button className="text-button" onClick={() => void removeWorkItem(item)}>
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        </div>
-      </div>
-
-      <div id="qa-checks" className="qa-section">
-        <div className="card qa-panel">
-          <div className="section-heading">
-            <div>
-              <h2>QA checks</h2>
-              <p>
-                {selectedWorkItem
-                  ? `Testing progress for "${selectedWorkItem.title}"`
-                  : 'Select a work item from the list to manage its QA checks.'}
-              </p>
-            </div>
-            {selectedWorkItem ? (
-              <button className="button secondary" onClick={() => void loadQaChecks()} disabled={qaLoading}>
-                {qaLoading ? 'Refreshing...' : 'Refresh QA'}
-              </button>
-            ) : null}
-          </div>
-
-          {selectedWorkItem ? (
-            <div className="qa-summary">
-              <div>
-                <span>Total</span>
-                <strong>{qaSummary.total}</strong>
-              </div>
-              <div>
-                <span>Passed</span>
-                <strong>{qaSummary.passed}</strong>
-              </div>
-              <div>
-                <span>Pending</span>
-                <strong>{qaSummary.pending}</strong>
-              </div>
-              <div>
-                <span>Failed</span>
-                <strong>{qaSummary.failed}</strong>
-              </div>
-            </div>
-          ) : null}
-
-          {selectedWorkItem ? (
-            <div className="qa-layout">
-              <form className="qa-form" onSubmit={submitQaCheck}>
-                <div className="field">
-                  <label htmlFor="qa-title">Test title</label>
-                  <input
-                    id="qa-title"
-                    value={qaForm.testTitle}
-                    onChange={(event) => setQaForm({ ...qaForm, testTitle: event.target.value })}
-                    placeholder="Verify happy path"
-                    required
-                  />
-                </div>
-                <div className="field">
-                  <label htmlFor="qa-expected">Expected result</label>
-                  <textarea
-                    id="qa-expected"
-                    value={qaForm.expectedResult}
-                    onChange={(event) => setQaForm({ ...qaForm, expectedResult: event.target.value })}
-                    placeholder="What should happen?"
-                    required
-                  />
-                </div>
-                <div className="field">
-                  <label htmlFor="qa-actual">Actual result</label>
-                  <textarea
-                    id="qa-actual"
-                    value={qaForm.actualResult ?? ''}
-                    onChange={(event) => setQaForm({ ...qaForm, actualResult: event.target.value })}
-                    placeholder="What happened during testing?"
-                  />
-                </div>
-                <div className="form-grid">
-                  <div className="field">
-                    <label htmlFor="qa-status">Status</label>
-                    <select
-                      id="qa-status"
-                      value={qaForm.status}
-                      onChange={(event) => setQaForm({ ...qaForm, status: event.target.value as QaCheckStatus })}
-                    >
-                      {QA_CHECK_STATUSES.map((status) => (
-                        <option key={status} value={status}>
-                          {formatLabel(status)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="field">
-                    <label htmlFor="qa-tester">Tester</label>
-                    <input
-                      id="qa-tester"
-                      value={qaForm.tester}
-                      onChange={(event) => setQaForm({ ...qaForm, tester: event.target.value })}
-                      placeholder="Tester name"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="field">
-                  <label htmlFor="qa-notes">Notes</label>
-                  <textarea
-                    id="qa-notes"
-                    value={qaForm.notes ?? ''}
-                    onChange={(event) => setQaForm({ ...qaForm, notes: event.target.value })}
-                    placeholder="Extra testing context"
-                  />
-                </div>
-                <button className="button" disabled={qaSaving}>
-                  {qaSaving ? 'Adding...' : 'Add QA check'}
-                </button>
-              </form>
-
-              <div className="qa-list">
-                {qaLoading ? <div className="empty table-state">Loading QA checks...</div> : null}
-                {!qaLoading && !qaChecks.length ? (
-                  <div className="empty table-state">No QA checks yet for this work item.</div>
-                ) : null}
-                {!qaLoading && qaChecks.length
-                  ? qaChecks.map((check) => (
-                      <div className="qa-check-card" key={check.id}>
-                        <div>
-                          <strong>{check.testTitle}</strong>
-                          <span>{check.expectedResult}</span>
-                          {check.actualResult ? <small>Actual: {check.actualResult}</small> : null}
-                          {check.notes ? <small>Notes: {check.notes}</small> : null}
-                        </div>
-                        <div className="qa-check-actions">
-                          <span className={`badge qa-${check.status}`}>{formatLabel(check.status)}</span>
-                          <select
-                            value={check.status}
-                            onChange={(event) => void updateQaStatus(check, event.target.value as QaCheckStatus)}
-                          >
-                            {QA_CHECK_STATUSES.map((status) => (
-                              <option key={status} value={status}>
-                                {formatLabel(status)}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    ))
-                  : null}
-              </div>
-            </div>
-          ) : (
-            <div className="empty table-state">Choose QA on a work item to start testing it.</div>
-          )}
-        </div>
-      </div>
+      {activeView === 'qa-checks' ? (
+        <QaChecksView
+          currentUserName={currentUserName}
+          qaChecks={qaChecks}
+          qaForm={qaForm}
+          qaLoading={qaLoading}
+          qaSaving={qaSaving}
+          qaSummary={qaSummary}
+          selectedWorkItem={selectedWorkItem}
+          selectedWorkItemId={selectedWorkItemId}
+          workItems={workItems}
+          onClearSelection={clearQaSelection}
+          onQaFormChange={setQaForm}
+          onRefresh={() => void loadQaChecks()}
+          onSelectWorkItem={(workItem) => void selectWorkItemForQa(workItem)}
+          onSubmit={submitQaCheck}
+          onUpdateStatus={updateQaStatus}
+        />
+      ) : null}
     </section>
   );
 };
