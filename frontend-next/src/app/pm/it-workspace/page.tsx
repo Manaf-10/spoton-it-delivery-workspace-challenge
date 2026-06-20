@@ -59,6 +59,15 @@ const ItWorkspacePage = () => {
     return Array.from(new Set(workItems.map((item) => item.assignee).filter(Boolean))).sort();
   }, [workItems]);
 
+  const summary = useMemo(() => {
+    return {
+      total: workItems.length,
+      active: workItems.filter((item) => !['ready_for_release', 'released'].includes(item.status)).length,
+      ready: workItems.filter((item) => item.status === 'ready_for_release').length,
+      released: workItems.filter((item) => item.status === 'released').length,
+    };
+  }, [workItems]);
+
   const loadWorkItems = async () => {
     setLoading(true);
     setError('');
@@ -151,16 +160,47 @@ const ItWorkspacePage = () => {
           <h1>Work items</h1>
           <p>Plan, assign, and move engineering work through the delivery workflow.</p>
         </div>
-        <button className="button secondary" onClick={loadWorkItems} disabled={loading}>
-          {loading ? 'Refreshing...' : 'Refresh'}
-        </button>
       </div>
 
       {error ? <div className="card error workspace-alert">{error}</div> : null}
       {success ? <div className="card success workspace-alert">{success}</div> : null}
 
+      <div className="workspace-summary">
+        <div className="card summary-card">
+          <span>Total work</span>
+          <strong>{summary.total}</strong>
+        </div>
+        <div className="card summary-card">
+          <span>Active</span>
+          <strong>{summary.active}</strong>
+        </div>
+        <div className="card summary-card">
+          <span>Ready for release</span>
+          <strong>{summary.ready}</strong>
+        </div>
+        <div className="card summary-card">
+          <span>Released</span>
+          <strong>{summary.released}</strong>
+        </div>
+      </div>
+
+      <div className="card workspace-actions">
+        <div>
+          <h2>Actions</h2>
+          <p>Create work, filter the list, move items through the workflow, or remove items that are no longer needed.</p>
+        </div>
+        <div className="actions-list">
+          <button className="button secondary" onClick={loadWorkItems} disabled={loading}>
+            {loading ? 'Refreshing...' : 'Refresh work'}
+          </button>
+          <a className="button" href="#create-work-item">
+            Create work item
+          </a>
+        </div>
+      </div>
+
       <div className="workspace-layout">
-        <form className="card workspace-form" onSubmit={submit}>
+        <form id="create-work-item" className="card workspace-form" onSubmit={submit}>
           <h2>Create work item</h2>
           <div className="field">
             <label htmlFor="title">Title</label>

@@ -93,3 +93,31 @@ Codex decided to add the missing frontend APIs by itself, which was not the orig
 ### Related Commit
 
 N/A
+
+## 2026-06-20 - Codex
+
+### Goal
+
+Create the Work Items listing and form with search filters.
+
+### Prompt
+
+Create the form for creating the work item with the appropriate fields. Make sure that the due date cannot be less than today. Add the search bar with the filters and below it the listing. Use a grid box to make them use a pento-box-like layout with respect to the mobile view.
+
+### Output Summary
+
+Codex built the Work Items frontend page with a create form, search and filter controls, loading/empty/error/success states, and a grid-based work item listing. It also added frontend styling for the workspace layout and blocked past dates in the due date picker.
+
+### Files Changed
+
+- frontend-next/src/app/pm/it-workspace/page.tsx
+- frontend-next/src/app/globals.css
+- frontend-next/src/lib/api.ts
+
+### Manual Review
+
+Reviewed the page in the browser, adjusted the desktop layout after it broke at larger widths, changed the listing from table layout to CSS grid, normalized the form controls, and accepted the final layout direction.
+
+### Related Commit
+
+N/A
