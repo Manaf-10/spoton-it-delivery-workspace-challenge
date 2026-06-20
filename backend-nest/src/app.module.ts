@@ -13,6 +13,8 @@ import { ReleasesController } from './releases/releases.controller';
 import { ReleasesService } from './releases/releases.service';
 import { QaChecksController } from './qa_checks/qa_checks.controller';
 import { QaChecksService } from './qa_checks/qa_checks.service';
+import { WorkItemsController } from './work_items/work_items.controller';
+import { WorkItemsService } from './work_items/work_items.service';
 @Module({
   imports: [
     JwtModule.register({
@@ -26,6 +28,7 @@ import { QaChecksService } from './qa_checks/qa_checks.service';
     AuthController,
     ScoreController,
     ItWorkspaceController,
+    WorkItemsController,
     ReleasesController,
     QaChecksController,
   ],
@@ -33,6 +36,7 @@ import { QaChecksService } from './qa_checks/qa_checks.service';
     AuthService,
     ScoreService,
     ItWorkspaceService,
+    WorkItemsService,
     DatabaseService,
     ReleasesService,
     QaChecksService,

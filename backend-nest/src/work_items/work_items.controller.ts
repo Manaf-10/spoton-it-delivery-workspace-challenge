@@ -12,8 +12,13 @@ export class WorkItemsController {
   constructor(private readonly workItems: WorkItemsService) {}
 
   @Get()
-  list(@Query('status') status?: string, @Query('priority') priority?: string) {
-    return this.workItems.list({ status, priority });
+  list(
+    @Query('status') status?: string,
+    @Query('priority') priority?: string,
+    @Query('assignee') assignee?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.workItems.list({ status, priority, assignee, search });
   }
 
   @Get(':id')
