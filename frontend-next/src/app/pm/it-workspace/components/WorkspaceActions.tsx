@@ -27,6 +27,12 @@ export const WorkspaceActions = ({ activeView, loading, onRefresh, onViewChange 
         >
           QA checks
         </button>
+        <button
+          className={`button ${activeView === 'releases' ? '' : 'secondary'}`}
+          onClick={() => onViewChange('releases')}
+        >
+          Releases
+        </button>
         <button className="button secondary" onClick={onRefresh} disabled={loading}>
           {loading ? 'Refreshing...' : 'Refresh'}
         </button>

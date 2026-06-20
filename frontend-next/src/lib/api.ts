@@ -32,6 +32,7 @@ export const WORK_ITEM_STATUSES: WorkItemStatus[] = [
   'released',
 ];
 export const QA_CHECK_STATUSES: QaCheckStatus[] = ['pending', 'passed', 'failed'];
+export const DEPLOYMENT_STATUSES: DeploymentStatus[] = ['draft', 'scheduled', 'deployed', 'rolled_back'];
 
 export type WorkItem = {
   id: string;

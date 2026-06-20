@@ -4,17 +4,20 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import {
   api,
   CreateQaCheckInput,
+  CreateReleaseInput,
   CreateWorkItemInput,
   QaCheck,
   QaCheckStatus,
+  Release,
   WorkItem,
   WorkItemStatus,
 } from '@/lib/api';
 import { QaChecksView } from './components/QaChecksView';
+import { ReleasesView } from './components/ReleasesView';
 import { WorkItemsView } from './components/WorkItemsView';
 import { WorkspaceActions } from './components/WorkspaceActions';
 import { WorkspaceSummary } from './components/WorkspaceSummary';
-import { formatLabel, INITIAL_QA_FORM, INITIAL_WORK_ITEM_FORM } from './constants';
+import { formatLabel, INITIAL_QA_FORM, INITIAL_RELEASE_FORM, INITIAL_WORK_ITEM_FORM } from './constants';
 import type { WorkItemFiltersState, WorkspaceView } from './types';
 
 const ItWorkspacePage = () => {
@@ -30,6 +33,10 @@ const ItWorkspacePage = () => {
   const [qaLoading, setQaLoading] = useState(false);
   const [qaSaving, setQaSaving] = useState(false);
   const [qaForm, setQaForm] = useState<CreateQaCheckInput>(INITIAL_QA_FORM);
+  const [releases, setReleases] = useState<Release[]>([]);
+  const [releaseLoading, setReleaseLoading] = useState(false);
+  const [releaseSaving, setReleaseSaving] = useState(false);
+  const [releaseForm, setReleaseForm] = useState<CreateReleaseInput>(INITIAL_RELEASE_FORM);
   const [activeView, setActiveView] = useState<WorkspaceView>('work-items');
   const [filters, setFilters] = useState<WorkItemFiltersState>({
     status: '',
@@ -66,6 +73,10 @@ const ItWorkspacePage = () => {
       pending: qaChecks.length - passed - failed,
     };
   }, [qaChecks]);
+
+  const readyWorkItems = useMemo(() => {
+    return workItems.filter((item) => item.status === 'ready_for_release');
+  }, [workItems]);
 
   const loadWorkItems = async () => {
     setLoading(true);
@@ -105,9 +116,27 @@ const ItWorkspacePage = () => {
     }
   };
 
+  const loadReleases = async () => {
+    setReleaseLoading(true);
+    setError('');
+
+    try {
+      const loadedReleases = await api.listReleases();
+      setReleases(loadedReleases);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load releases');
+    } finally {
+      setReleaseLoading(false);
+    }
+  };
+
   useEffect(() => {
     void loadWorkItems();
   }, [filters.status, filters.priority, filters.assignee]);
+
+  useEffect(() => {
+    void loadReleases();
+  }, []);
 
   useEffect(() => {
     api.me()
@@ -210,6 +239,40 @@ const ItWorkspacePage = () => {
     }
   };
 
+  const submitRelease = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setReleaseSaving(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      await api.createRelease({
+        ...releaseForm,
+        linkedWorkItemIds: releaseForm.linkedWorkItemIds?.length ? releaseForm.linkedWorkItemIds : undefined,
+      });
+      setReleaseForm(INITIAL_RELEASE_FORM);
+      setSuccess('Release created.');
+      await loadReleases();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create release');
+    } finally {
+      setReleaseSaving(false);
+    }
+  };
+
+  const deployRelease = async (release: Release) => {
+    setError('');
+    setSuccess('');
+
+    try {
+      await api.deployRelease(release.id);
+      setSuccess(`Deployed ${release.version}.`);
+      await Promise.all([loadReleases(), loadWorkItems()]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to deploy release');
+    }
+  };
+
   const updateStatus = async (workItem: WorkItem, status: WorkItemStatus) => {
     setError('');
     setSuccess('');
@@ -293,6 +356,20 @@ const ItWorkspacePage = () => {
           onSelectWorkItem={(workItem) => void selectWorkItemForQa(workItem)}
           onSubmit={submitQaCheck}
           onUpdateStatus={updateQaStatus}
+        />
+      ) : null}
+
+      {activeView === 'releases' ? (
+        <ReleasesView
+          form={releaseForm}
+          loading={releaseLoading}
+          readyWorkItems={readyWorkItems}
+          releases={releases}
+          saving={releaseSaving}
+          onDeploy={deployRelease}
+          onFormChange={setReleaseForm}
+          onRefresh={loadReleases}
+          onSubmit={submitRelease}
         />
       ) : null}
     </section>

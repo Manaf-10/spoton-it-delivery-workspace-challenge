@@ -1,4 +1,4 @@
-import type { CreateQaCheckInput, CreateWorkItemInput, WorkItemStatus } from '@/lib/api';
+import type { CreateQaCheckInput, CreateReleaseInput, CreateWorkItemInput, WorkItemStatus } from '@/lib/api';
 
 export const NEXT_STATUSES: Record<WorkItemStatus, WorkItemStatus[]> = {
   backlog: ['planned'],
@@ -29,5 +29,13 @@ export const INITIAL_QA_FORM: CreateQaCheckInput = {
 };
 
 export const today = new Date().toISOString().slice(0, 10);
+
+export const INITIAL_RELEASE_FORM: CreateReleaseInput = {
+  version: '',
+  releaseDate: today,
+  summary: '',
+  deploymentStatus: 'draft',
+  linkedWorkItemIds: [],
+};
 
 export const formatLabel = (value: string) => value.replaceAll('_', ' ');
