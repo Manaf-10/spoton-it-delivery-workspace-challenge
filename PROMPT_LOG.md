@@ -121,3 +121,63 @@ Reviewed the page in the browser, adjusted the desktop layout after it broke at 
 ### Related Commit
 
 N/A
+
+### Related Commit
+
+N/A
+
+## 2026-06-20 - Codex
+
+### Goal
+
+Add the QA checks to the workspace and make the actions switch the lower view.
+
+### Prompt
+
+Now add the QA checks. It is getting too cramped up, make the actions have buttons where when you press a button it switches the lower part into that action which we have work items, QA checks, and maybe other things.
+
+### Output Summary
+
+Codex added the QA checks view to the IT Workspace. It added action buttons that switch the lower section between Work Items and QA Checks, added the QA work item picker, QA summary, QA form, QA list, and QA status updates.
+
+### Files Changed
+
+- frontend-next/src/app/pm/it-workspace/page.tsx
+- frontend-next/src/app/globals.css
+- frontend-next/src/lib/api.ts
+
+### Manual Review
+
+Reviewed the UI after the QA checks were added and adjusted the layout because the workspace was getting too crowded. Accepted the action-button approach because it made the page easier to use before adding more modules.
+
+### Related Commit
+
+N/A
+
+## 2026-06-20 - Codex
+
+### Goal
+
+Refactor the IT Workspace page into smaller components.
+
+### Prompt
+
+The page.tsx is too big now, refactor it make smaller components.
+
+### Output Summary
+
+Codex split the large IT Workspace page into smaller route-level components. The main page now keeps the state and handlers, while the summary, actions, work items view, and QA checks view live in separate component files. Shared constants and types were moved out too.
+
+### Files Changed
+
+- frontend-next/src/app/pm/it-workspace/page.tsx
+- frontend-next/src/app/pm/it-workspace/components/WorkspaceSummary.tsx
+- frontend-next/src/app/pm/it-workspace/components/WorkspaceActions.tsx
+- frontend-next/src/app/pm/it-workspace/components/WorkItemsView.tsx
+- frontend-next/src/app/pm/it-workspace/components/QaChecksView.tsx
+- frontend-next/src/app/pm/it-workspace/constants.ts
+- frontend-next/src/app/pm/it-workspace/types.ts
+
+### Manual Review
+
+Reviewed the refactor to confirm the page became smaller and the behavior stayed the same.
